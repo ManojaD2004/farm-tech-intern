@@ -9,7 +9,7 @@ import express from "express";
 import axios from "axios";
 import cors from "cors";
 import { configDotenv } from "dotenv";
-import { state } from "./District.js";
+import { state } from "./district.js";
 
 configDotenv();
 const app = express();
