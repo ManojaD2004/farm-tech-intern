@@ -245,6 +245,7 @@ app.post("/webhook", async (req, res) => {
         item[message.from].mandi.flag = 3;
       }
       item[message.from].mandi.flag++;
+      console.log(item[message.from].mandi.flag);
     }
 
     // Logic
