@@ -1,0 +1,36 @@
+const state = {
+    karnataka: {
+        1: "Bagalkot",
+        2: "Bangalore Rural",
+        3: "Bangalore Urban",
+        4: "Belagavi (Belgaum)",
+        5: "Ballari (Bellary)",
+        6: "Bidar",
+        7: "Chamarajanagar",
+        8: "Chikkamagaluru (Chikmagalur)",
+        9: "Chitradurga",
+        10: "Davanagere",
+        11: "Dharwad",
+        12: "Gadag",
+        13: "Gulbarga (Kalaburagi)",
+        14: "Hassan",
+        15: "Haveri",
+        16: "Kodagu",
+        17: "Kolar",
+        18: "Koppal",
+        19: "Mandya",
+        20: "Mysuru (Mysore)",
+        21: "Raichur",
+        22: "Ramanagara",
+        23: "Shimoga (Shivamogga)",
+        24: "Tumakuru (Tumkur)",
+        25: "Udupi",
+        26: "Uttara Kannada (Karwar)",
+        27: "Vijayapura (Bijapur)",
+        28: "Vidhana Soudha",
+        29: "Yadgir",
+        30: "Chikkaballapur",
+        31: "Dakshina Kannada (Mangalore)"
+    }
+};
+export { state }
