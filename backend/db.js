@@ -1,5 +1,5 @@
-const { Pool } = require("pg");
-const connectionString = ""; //Add your connection string from supabase :)
+import { Pool } from "pg";
+const connectionString = process.env.SUPABASE_LINK; //Add your connection string from supabase :)
 const pool = new Pool({
   connectionString,
 });
@@ -14,9 +14,7 @@ const mandiData = {
     cmd_price: "129.50",
   },
 };
-let locationId;
-let commodityId;
-let mandiId;
+
 async function connectDb() {
   try {
     await pool.connect();
@@ -27,8 +25,15 @@ async function connectDb() {
 }
 
 async function inserMandiData(data) {
-  const { phone_num, name, state, district, cmd_name, cmd_price } = data.mandi;
   try {
+    if (pool.ended) {
+      console.log("Pool not connected right!");
+      return;
+    }
+    const { phone_num, name, state, district, cmd_name, cmd_price } = data.mandi;
+    let locationId;
+    let commodityId;
+    let mandiId;
     //Inserting into loction
     const selectQuery =
       "SELECT location_id from location WHERE district = $1 and state = $2;";
@@ -89,9 +94,10 @@ async function inserMandiData(data) {
     );
     console.log(commodityPriceQueryResult.rows[0]);
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
   }
 }
 connectDb();
-inserMandiData(mandiData);
-console.log("Mandi Data inserted successfully :)");
+// inserMandiData(mandiData);
+// console.log("Mandi Data inserted successfully :)");
+export {inserMandiData};

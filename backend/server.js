@@ -10,6 +10,7 @@ import axios from "axios";
 import cors from "cors";
 import { configDotenv } from "dotenv";
 import { state } from "./district.js";
+import { inserMandiData } from "./db.js";
 
 configDotenv();
 const app = express();
@@ -130,6 +131,7 @@ app.post("/webhook", async (req, res) => {
       else if (item[message.from].mandi.flag === 4 || (message.text.body === "Hi" && item[message.from].mandi.name !== "" && item[message.from].mandi.district !== "")) {
         if (message.text.body === "Hi" && item[message.from].mandi.name !== "" && item[message.from].mandi.district !== "") {
           console.log(message?.interactive?.list_reply);
+          
           await axios({
             method: "POST",
             url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
@@ -211,6 +213,7 @@ app.post("/webhook", async (req, res) => {
       else if (message?.from && item[message.from].mandi.flag === 4) {
         item[message.from].mandi.cmd_price = message.text.body;
         mandiJSON = JSON.stringify(item[message.from]);
+        inserMandiData(item[message.from]);
         console.log(item[message.from].mandi.cmd_price);
         console.log(mandiJSON);
       }
