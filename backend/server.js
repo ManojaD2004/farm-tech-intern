@@ -142,7 +142,6 @@ app.post("/webhook", async (req, res) => {
           item[message.from].mandi.district !== ""
         ) {
           console.log(message?.interactive?.list_reply);
-          item[message.from].mandi.flag--;
           await axios({
             method: "POST",
             url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
@@ -236,13 +235,6 @@ app.post("/webhook", async (req, res) => {
       }
       if (message.text.body === "Yes") {
         item[message.from].mandi.flag = 2;
-      }
-      if (
-        message.text.body === "Hi" &&
-        item[message.from].mandi.name !== "" &&
-        item[message.from].mandi.district !== ""
-      ) {
-        item[message.from].mandi.flag = 3;
       }
       item[message.from].mandi.flag++;
       console.log(item[message.from].mandi.flag);
