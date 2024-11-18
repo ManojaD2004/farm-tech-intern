@@ -95,6 +95,4 @@ async function inserMandiData(data) {
 }
 connectDb();
 console.log("Connected Started!");
-// inserMandiData(mandiData);
-// console.log("Mandi Data inserted successfully :)");
 module.exports = { inserMandiData };
