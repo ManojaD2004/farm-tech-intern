@@ -142,7 +142,7 @@ app.post("/webhook", async (req, res) => {
           item[message.from].mandi.district !== ""
         ) {
           console.log(message?.interactive?.list_reply);
-
+          item[message.from].mandi.flag--;
           await axios({
             method: "POST",
             url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
