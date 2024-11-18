@@ -228,7 +228,7 @@ app.post("/webhook", async (req, res) => {
         item[message.from].mandi.cmd_name = message.text.body;
         console.log(item[message.from].mandi.cmd_name);
       } else if (message?.from && item[message.from].mandi.flag === 4) {
-        item[message.from].mandi.cmd_price = message.text.body;
+        item[message.from].mandi.cmd_price = Number(message.text.body);
         mandiJSON = JSON.stringify(item[message.from]);
         inserMandiData(item[message.from]);
         console.log(item[message.from].mandi.cmd_price);
