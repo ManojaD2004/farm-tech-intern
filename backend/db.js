@@ -32,7 +32,7 @@ async function inserMandiData(data) {
     const selectQueryResult = await pool.query(selectQuery, [district, state]);
     if (selectQueryResult.rows.length === 0) {
       const locationInsertQuery =
-        "INSERT INTO location (district,state) VALUES($1,$2) RETURNING location_id ;  ";
+        "INSERT INTO location (district,state) VALUES($1,$2) RETURNING location_id ; ";
       const queryResult = await pool.query(locationInsertQuery, [
         district,
         state,
