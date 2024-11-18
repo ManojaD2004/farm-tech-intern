@@ -72,7 +72,7 @@ async function inserMandiData(data) {
     //Inserting into commodity
     const commodityInsertQuery =
       `INSERT INTO commodity (name) 
-      VALUES($1) 
+      VALUES(LOWER($1)) 
       ON CONFLICT(name) DO UPDATE
       SET name = EXCLUDED.name 
       RETURNING commodity_id ;`;
