@@ -1,5 +1,5 @@
 const {Pool}  = require('pg');
-const connectionString = "postgresql://postgres.bpghpskockfbsxskqlfv:Rahulla2005!@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
+const connectionString = ""//Add your connection string from supabase :)
 const pool = new Pool({
     connectionString
 });
