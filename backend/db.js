@@ -71,12 +71,16 @@ async function inserMandiData(data) {
 
     //Inserting into commodity
     const commodityInsertQuery =
-      "INSERT INTO commodity (name) VALUES($1) RETURNING commodity_id ;";
-    const commodityQueryResult = await pool.query(commodityInsertQuery, [
-      cmd_name,
-    ]);
-    commodityId = commodityQueryResult.rows[0].commodity_id;
-    console.log(commodityQueryResult.rows[0]);
+      `INSERT INTO commodity (name) 
+      VALUES($1) 
+      ON CONFLICT(name) DO UPDATE
+      SET name = EXCLUDED.name 
+      RETURNING commodity_id ;`;
+      const commodityQueryResult = await pool.query(commodityInsertQuery, [cmd_name]);
+      commodityId = commodityQueryResult.rows[0].commodity_id;
+      console.log(commodityQueryResult.rows[0].commodityId);
+    
+  
     //Inserting into commodity_price
     const commodityPriceInsertQuery =
       "INSERT INTO commodity_price (commodity_id,location_id,mandi_id,grade_price) VALUES($1,$2,$3,$4) RETURNING * ;";
