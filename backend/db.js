@@ -1,19 +1,10 @@
-import { Pool } from "pg";
+const { Pool } = require("pg");
+const { configDotenv } = require("dotenv");
+configDotenv({ path: "./.env.local" });
 const connectionString = process.env.SUPABASE_LINK; //Add your connection string from supabase :)
 const pool = new Pool({
   connectionString,
 });
-
-const mandiData = {
-  mandi: {
-    phone_num: "+1-800-565-1234",
-    name: "john doe",
-    state: "Karnataka",
-    district: "Bgalkote",
-    cmd_name: "banana",
-    cmd_price: "129.50",
-  },
-};
 
 async function connectDb() {
   try {
@@ -30,7 +21,8 @@ async function inserMandiData(data) {
       console.log("Pool not connected right!");
       return;
     }
-    const { phone_num, name, state, district, cmd_name, cmd_price } = data.mandi;
+    const { phone_num, name, state, district, cmd_name, cmd_price } =
+      data.mandi;
     let locationId;
     let commodityId;
     let mandiId;
@@ -98,6 +90,7 @@ async function inserMandiData(data) {
   }
 }
 connectDb();
+console.log("Connected Started!");
 // inserMandiData(mandiData);
 // console.log("Mandi Data inserted successfully :)");
-export {inserMandiData};
+module.exports = { inserMandiData };

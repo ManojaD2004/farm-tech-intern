@@ -1,22 +1,16 @@
-/**
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+const express = require("express");
+const axios = require("axios");
+const cors = require("cors");
+const { configDotenv } = require("dotenv");
+const { state } = require("./district.js");
+const { inserMandiData } = require("./db.js");
 
-import express from "express";
-import axios from "axios";
-import cors from "cors";
-import { configDotenv } from "dotenv";
-import { state } from "./district.js";
-import { inserMandiData } from "./db.js";
-
-configDotenv();
+configDotenv({ path: "./.env.local" });
 const app = express();
 app.use(express.json());
 app.use(cors());
 
+// console.log(process.env.WEBHOOK_VERIFY_TOKEN);
 const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN, PORT } = process.env;
 let item = {};
 let mandiJSON;
@@ -48,8 +42,8 @@ app.post("/webhook", async (req, res) => {
             district: "",
             cmd_name: "",
             cmd_price: 0.0,
-            flag: 0
-          }
+            flag: 0,
+          },
         };
       }
       item[message.from].mandi.phone_num = message.from;
@@ -65,16 +59,14 @@ app.post("/webhook", async (req, res) => {
             messaging_product: "whatsapp",
             to: message.from,
             text: {
-              body:
-                "Enter your Name"
+              body: "Enter your Name",
             },
             context: {
               message_id: message.id, // shows the message as a reply to the original user message
             },
           },
         });
-      }
-      else if (item[message.from].mandi.flag === 1) {
+      } else if (item[message.from].mandi.flag === 1) {
         await axios({
           method: "POST",
           url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
@@ -84,14 +76,25 @@ app.post("/webhook", async (req, res) => {
           data: {
             messaging_product: "whatsapp",
             to: message.from,
-            text: { body: "Greetings to" + " " + message.text.body + " " + " please enter your district to begin the next phase of the process." + "\n" + District },
+            text: {
+              body:
+                "Greetings to" +
+                " " +
+                message.text.body +
+                " " +
+                " please enter your district to begin the next phase of the process." +
+                "\n" +
+                District,
+            },
             context: {
               message_id: message.id, // shows the message as a reply to the original user message
             },
           },
         });
-      }
-      else if (item[message.from].mandi.flag === 2 || message.text.body === "Yes") {
+      } else if (
+        item[message.from].mandi.flag === 2 ||
+        message.text.body === "Yes"
+      ) {
         console.log(message?.interactive?.list_reply);
         await axios({
           method: "POST",
@@ -108,8 +111,7 @@ app.post("/webhook", async (req, res) => {
             },
           },
         });
-      }
-      else if (item[message.from].mandi.flag === 3) {
+      } else if (item[message.from].mandi.flag === 3) {
         console.log(message?.interactive?.list_reply);
         await axios({
           method: "POST",
@@ -120,18 +122,27 @@ app.post("/webhook", async (req, res) => {
           data: {
             messaging_product: "whatsapp",
             to: message.from,
-            text: { body: "Enter the" + " " + message.text.body + " " + "Price" },
+            text: {
+              body: "Enter the" + " " + message.text.body + " " + "Price",
+            },
             context: {
               message_id: message.id, // shows the message as pa reply to the original user message
             },
           },
         });
-
-      }
-      else if (item[message.from].mandi.flag === 4 || (message.text.body === "Hi" && item[message.from].mandi.name !== "" && item[message.from].mandi.district !== "")) {
-        if (message.text.body === "Hi" && item[message.from].mandi.name !== "" && item[message.from].mandi.district !== "") {
+      } else if (
+        item[message.from].mandi.flag === 4 ||
+        (message.text.body === "Hi" &&
+          item[message.from].mandi.name !== "" &&
+          item[message.from].mandi.district !== "")
+      ) {
+        if (
+          message.text.body === "Hi" &&
+          item[message.from].mandi.name !== "" &&
+          item[message.from].mandi.district !== ""
+        ) {
           console.log(message?.interactive?.list_reply);
-          
+
           await axios({
             method: "POST",
             url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
@@ -141,7 +152,9 @@ app.post("/webhook", async (req, res) => {
             data: {
               messaging_product: "whatsapp",
               to: message.from,
-              text: { body: "Welcome back" + " " + item[message.from].mandi.name },
+              text: {
+                body: "Welcome back" + " " + item[message.from].mandi.name,
+              },
               context: {
                 message_id: message.id, // shows the message as pa reply to the original user message
               },
@@ -164,8 +177,7 @@ app.post("/webhook", async (req, res) => {
             },
           },
         });
-      }
-      else if (message.text.body === "No") {
+      } else if (message.text.body === "No") {
         console.log(message?.interactive?.list_reply);
         await axios({
           method: "POST",
@@ -197,20 +209,25 @@ app.post("/webhook", async (req, res) => {
           message_id: message.id,
         },
       });
-      if (message?.from && item[message.from].mandi.name === "" && item[message.from].mandi.flag === 1) {
+      if (
+        message?.from &&
+        item[message.from].mandi.name === "" &&
+        item[message.from].mandi.flag === 1
+      ) {
         item[message.from].mandi.name = message.text.body;
         console.log(item[message.from].mandi.name);
-      }
-      else if (message?.from && item[message.from].mandi.district === "" && item[message.from].mandi.flag === 2) {
+      } else if (
+        message?.from &&
+        item[message.from].mandi.district === "" &&
+        item[message.from].mandi.flag === 2
+      ) {
         item[message.from].mandi.district = state.karnataka[message.text.body];
         console.log(item[message.from].mandi.state);
         console.log(item[message.from].mandi.district);
-      }
-      else if (message?.from && item[message.from].mandi.flag === 3) {
+      } else if (message?.from && item[message.from].mandi.flag === 3) {
         item[message.from].mandi.cmd_name = message.text.body;
         console.log(item[message.from].mandi.cmd_name);
-      }
-      else if (message?.from && item[message.from].mandi.flag === 4) {
+      } else if (message?.from && item[message.from].mandi.flag === 4) {
         item[message.from].mandi.cmd_price = message.text.body;
         mandiJSON = JSON.stringify(item[message.from]);
         inserMandiData(item[message.from]);
@@ -220,16 +237,18 @@ app.post("/webhook", async (req, res) => {
       if (message.text.body === "Yes") {
         item[message.from].mandi.flag = 2;
       }
-      if (message.text.body === "Hi" && item[message.from].mandi.name !== "" && item[message.from].mandi.district !== "") {
+      if (
+        message.text.body === "Hi" &&
+        item[message.from].mandi.name !== "" &&
+        item[message.from].mandi.district !== ""
+      ) {
         item[message.from].mandi.flag = 3;
       }
       item[message.from].mandi.flag++;
     }
 
-
-    // Logic 
+    // Logic
     res.sendStatus(200);
-
   } catch (error) {
     console.log(error);
     console.log("Error!");
