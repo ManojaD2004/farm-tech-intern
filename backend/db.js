@@ -1,20 +1,8 @@
-const { Pool } = require("pg");
-const { configDotenv } = require("dotenv");
-configDotenv({ path: "./.env.local" });
-const connectionString = process.env.SUPABASE_LINK; //Add your connection string from supabase :)
-const pool = new Pool({
-  connectionString,
-});
-
-async function connectDb() {
-  try {
-    await pool.connect();
-    console.log("Connected to Supabase :)");
-  } catch (err) {
-    console.error(err);
-  }
-}
-
+const {pool,connectDb} = require("./__dbQueriesmod__/connectdb")
+const {insertIntoLocation} = require("./__dbQueriesmod__/insertLocation")
+const {insertIntoMandi} = require("./__dbQueriesmod__/insertIntoMandi")
+const {insertIntoCommodity} = require("./__dbQueriesmod__/insertIntoCommodity")
+const {insertIntoCommdityPrice} = require("./__dbQueriesmod__/insertIntoCommodityPrice")
 async function inserMandiData(data) {
   try {
     if (pool.ended) {
@@ -27,72 +15,20 @@ async function inserMandiData(data) {
     let commodityId;
     let mandiId;
     //Inserting into loction
-    const selectQuery =
-      "SELECT location_id from location WHERE district = $1 and state = $2;";
-    const selectQueryResult = await pool.query(selectQuery, [district, state]);
-    if (selectQueryResult.rows.length === 0) {
-      const locationInsertQuery =
-        "INSERT INTO location (district,state) VALUES($1,$2) RETURNING location_id ; ";
-      const queryResult = await pool.query(locationInsertQuery, [
-        district,
-        state,
-      ]);
-      locationId = queryResult.rows[0].location_id;
-    } else {
-      locationId = selectQueryResult.rows[0].location_id;
-    }
+   locationId = await insertIntoLocation(pool,district,state)
 
     //Inserting into Mstr_Mandi
-    const mstrMandiInsertQuery = `
-        INSERT INTO mstr_mandi (phone_number, location_id, name)
-        VALUES($1, $2, $3)
-        ON CONFLICT(phone_number) DO NOTHING
-        RETURNING mandi_id;
-    `;
-
-    const mandiQueryResult = await pool.query(mstrMandiInsertQuery, [
-      phone_num,
-      locationId,
-      name,
-    ]);
-
-    if (mandiQueryResult.rows.length > 0) {
-      mandiId = mandiQueryResult.rows[0].mandi_id;
-    } else {
-      const selectMandiIdQuery =
-        "SELECT mandi_id FROM mstr_mandi WHERE phone_number = $1;";
-      const mandiSelectQueryResult = await pool.query(selectMandiIdQuery, [
-        phone_num,
-      ]);
-      mandiId = mandiSelectQueryResult.rows[0].mandi_id;
-    }
-
-    console.log("Mandi ID:", mandiId);
+   mandiId = await insertIntoMandi(pool,phone_num,locationId,name)
 
     //Inserting into commodity
-    const commodityInsertQuery =
-      `INSERT INTO commodity (name) 
-      VALUES(LOWER($1)) 
-      ON CONFLICT(name) DO UPDATE
-      SET name = EXCLUDED.name 
-      RETURNING commodity_id ;`;
-      const commodityQueryResult = await pool.query(commodityInsertQuery, [cmd_name]);
-      commodityId = commodityQueryResult.rows[0].commodity_id;
-      console.log(commodityQueryResult.rows[0].commodityId);
-    
+    commodityId = await insertIntoCommodity(pool,cmd_name)
   
     //Inserting into commodity_price
-    const commodityPriceInsertQuery =
-      "INSERT INTO commodity_price (commodity_id,location_id,mandi_id,grade_price) VALUES($1,$2,$3,$4) RETURNING * ;";
-    const commodityPriceQueryResult = await pool.query(
-      commodityPriceInsertQuery,
-      [commodityId, locationId, mandiId, cmd_price]
-    );
-    console.log(commodityPriceQueryResult.rows[0]);
+    await insertIntoCommdityPrice(pool,commodityId,locationId,mandiId,cmd_price)
   } catch (err) {
     console.error(err.message);
   }
 }
-connectDb();
+connectDb()
 console.log("Connected Started!");
 module.exports = { inserMandiData };
