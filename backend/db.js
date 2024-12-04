@@ -14,16 +14,12 @@ async function inserMandiData(data) {
     let locationId;
     let commodityId;
     let mandiId;
-    //Inserting into loction
    locationId = await insertIntoLocation(pool,district,state)
 
-    //Inserting into Mstr_Mandi
    mandiId = await insertIntoMandi(pool,phone_num,locationId,name)
 
-    //Inserting into commodity
     commodityId = await insertIntoCommodity(pool,cmd_name)
   
-    //Inserting into commodity_price
     await insertIntoCommdityPrice(pool,commodityId,locationId,mandiId,cmd_price)
   } catch (err) {
     console.error(err.message);
