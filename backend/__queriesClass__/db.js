@@ -60,43 +60,21 @@ async insertIntoDistrictMaster(districtName, stateId) {
   }
 }
   
-  async insertIntoLocation(districtId) {
+  async insertIntoLocation(districtName,stateId) {
     let locationId;
-    const selectLocationQuery = `SELECT location_id FROM Location WHERE district_id = $1;`
-    const selectLocationResult = await this.pool.query(selectLocationQuery, [districtId]);
+    const selectLocationQuery = `SELECT location_id FROM Location WHERE district_name = $1 and state_id = $2;`;
+
+    const selectLocationResult = await this.pool.query(selectLocationQuery, [districtName,stateId]);
 
     if (selectLocationResult.rows.length === 0) {
-      const insertLocationQuery = `INSERT INTO Location (district_id) VALUES ($1) RETURNING location_id;`
-      const insertLocationResult = await this.pool.query(insertLocationQuery, [districtId]);
+      const insertLocationQuery = `INSERT INTO Location (district_name,state_id) VALUES ($1,$2) RETURNING location_id;`
+      const insertLocationResult = await this.pool.query(insertLocationQuery, [districtName,stateId]);
       locationId = insertLocationResult.rows[0].location_id;
     } else {
       locationId = selectLocationResult.rows[0].location_id;
     }
 
     return locationId;
-  }
-  
-
-  async insertIntoCategory(categoryName) {
-    let categoryId
-    const insertCategoryQuery = `
-      INSERT INTO Category (category_name)
-      VALUES ($1)
-      ON CONFLICT (category_name) DO NOTHING
-      RETURNING category_id;
-    `;
-
-    const categoryResult = await this.pool.query(insertCategoryQuery, [categoryName]);
-
-    if (categoryResult.rows.length > 0) {
-      categoryId =  categoryResult.rows[0].category_id;
-      return categoryId
-    } else {
-      const selectCategoryQuery = 'SELECT category_id FROM Category WHERE category_name = $1;';
-      const selectCategoryResult = await this.pool.query(selectCategoryQuery, [categoryName]);
-      categoryId =  selectCategoryResult.rows[0].category_id;
-      return categoryId
-    }
   }
 
   async insertIntoMandi(uuId, locationId, name) {
@@ -120,6 +98,39 @@ async insertIntoDistrictMaster(districtName, stateId) {
 
     return mandiId;
   }
+  async insertIntoContact(mandiId, contactType, contactDetail) {
+    const insertContactQuery = `
+      INSERT INTO Contact (Mandi_id, Contact_type, Contact_detail)
+      VALUES ($1, $2, $3)
+      RETURNING contact_id;
+    `;
+
+    const contactResult = await this.pool.query(insertContactQuery, [mandiId, contactType, contactDetail]);
+    console.log(contactResult.rows[0].contact_id)
+
+    }
+    async insertIntoCategory(categoryName) {
+      let categoryId
+      const insertCategoryQuery = `
+        INSERT INTO Category (category_name)
+        VALUES ($1)
+        ON CONFLICT (category_name) DO NOTHING
+        RETURNING category_id;
+      `;
+  
+      const categoryResult = await this.pool.query(insertCategoryQuery, [categoryName]);
+  
+      if (categoryResult.rows.length > 0) {
+        categoryId =  categoryResult.rows[0].category_id;
+        return categoryId
+      } else {
+        const selectCategoryQuery = 'SELECT category_id FROM Category WHERE category_name = $1;';
+        const selectCategoryResult = await this.pool.query(selectCategoryQuery, [categoryName]);
+        categoryId =  selectCategoryResult.rows[0].category_id;
+        return categoryId
+      }
+    }
+  
   async insertIntoCommodity(cmdName, categoryId) {
     let commodityId
     const insertCommodityQuery = `
@@ -152,19 +163,19 @@ async insertIntoDistrictMaster(districtName, stateId) {
   }
 
   async insertMandiData(data) {
-    const { uuId, name, stateName, districtName, cmdName, categoryName, gradeType, gradePrice } = data.mandi;
+    const { uuId, name, stateName, districtName,categoryName, cmdName, gradeType, gradePrice , contact} = data.mandi;
     try {
       const stateId = await this.insertIntoStateMaster(stateName);
-      const districtId = await this.insertIntoDistrictMaster(districtName, stateId);
-      const locationId = await this.insertIntoLocation(districtId);
+      const locationId = await this.insertIntoLocation(districtName,stateId);
       const mandiId = await this.insertIntoMandi(uuId, locationId, name);
       const categoryId = await this.insertIntoCategory(categoryName);
       const commodityId = await this.insertIntoCommodity(cmdName, categoryId);
+      const { contactType, contactDetail } = contact;
+      await this.insertIntoContact(mandiId,contactType,contactDetail);
       await this.insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
     } catch (err) {
       console.error('Error inserting mandi data:', err);
     }
   }
 }
-
 module.exports = {MandiDatabase}
