@@ -120,6 +120,19 @@ async insertIntoDistrictMaster(districtName, stateId) {
 
     return mandiId;
   }
+  async insertIntoContact(contactName, phone, email) {
+    const insertContactQuery = `
+      INSERT INTO Contact (name, phone, email)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (phone) DO NOTHING
+      RETURNING contact_id;
+    `;
+
+    const contactResult = await this.pool.query(insertContactQuery, [contactName, phone, email]);
+    console.log(contactResult)
+
+    }
+  
   async insertIntoCommodity(cmdName, categoryId) {
     let commodityId
     const insertCommodityQuery = `
@@ -152,7 +165,7 @@ async insertIntoDistrictMaster(districtName, stateId) {
   }
 
   async insertMandiData(data) {
-    const { uuId, name, stateName, districtName, cmdName, categoryName, gradeType, gradePrice } = data.mandi;
+    const { uuId, name, stateName, districtName, cmdName, categoryName, gradeType, gradePrice , contact} = data.mandi;
     try {
       const stateId = await this.insertIntoStateMaster(stateName);
       const districtId = await this.insertIntoDistrictMaster(districtName, stateId);
@@ -160,6 +173,8 @@ async insertIntoDistrictMaster(districtName, stateId) {
       const mandiId = await this.insertIntoMandi(uuId, locationId, name);
       const categoryId = await this.insertIntoCategory(categoryName);
       const commodityId = await this.insertIntoCommodity(cmdName, categoryId);
+      const { contactName, phone, email } = contact;
+      await this.insertIntoContact(contactName, phone, email);
       await this.insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
     } catch (err) {
       console.error('Error inserting mandi data:', err);
@@ -181,7 +196,12 @@ async insertIntoDistrictMaster(districtName, stateId) {
       cmdName: 'Apple',
       categoryName: 'Fruits',
       gradeType: 'A',
-      gradePrice: 125.00
+      gradePrice: 125.00,
+      contact: {
+        contactName: 'John Doe',
+        phone: '9876543210',
+        email: 'john.doe@example.com'
+      }
     }
   };
 
