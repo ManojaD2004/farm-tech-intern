@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 
 class MandiDatabase {
   constructor() {
-    const connectionString = "postgresql://postgres.bpghpskockfbsxskqlfv:Rahulla2005!@aws-0-ap-south-1.pooler.supabase.com:6543/postgres";
+    const connectionString = ;
     this.pool = new Pool({ connectionString });
   }
   async connectDb() {

@@ -1,8 +1,8 @@
 const { Pool } = require('pg');
-
+require('dotenv').config();
 class MandiDatabase {
   constructor() {
-    const connectionString = "postgresql://postgres.bpghpskockfbsxskqlfv:Rahulla2005!@aws-0-ap-south-1.pooler.supabase.com:6543/postgres";
+    const connectionString = process.env.CONNECTION_STRING;
     this.pool = new Pool({ connectionString });
   }
   async connectDb() {
@@ -60,43 +60,21 @@ async insertIntoDistrictMaster(districtName, stateId) {
   }
 }
   
-  async insertIntoLocation(districtId) {
+  async insertIntoLocation(districtName,stateId) {
     let locationId;
-    const selectLocationQuery = `SELECT location_id FROM Location WHERE district_id = $1;`
-    const selectLocationResult = await this.pool.query(selectLocationQuery, [districtId]);
+    const selectLocationQuery = `SELECT location_id FROM Location WHERE district_name = $1 and state_id = $2;`;
+
+    const selectLocationResult = await this.pool.query(selectLocationQuery, [districtName,stateId]);
 
     if (selectLocationResult.rows.length === 0) {
-      const insertLocationQuery = `INSERT INTO Location (district_id) VALUES ($1) RETURNING location_id;`
-      const insertLocationResult = await this.pool.query(insertLocationQuery, [districtId]);
+      const insertLocationQuery = `INSERT INTO Location (district_name,state_id) VALUES ($1,$2) RETURNING location_id;`
+      const insertLocationResult = await this.pool.query(insertLocationQuery, [districtName,stateId]);
       locationId = insertLocationResult.rows[0].location_id;
     } else {
       locationId = selectLocationResult.rows[0].location_id;
     }
 
     return locationId;
-  }
-  
-
-  async insertIntoCategory(categoryName) {
-    let categoryId
-    const insertCategoryQuery = `
-      INSERT INTO Category (category_name)
-      VALUES ($1)
-      ON CONFLICT (category_name) DO NOTHING
-      RETURNING category_id;
-    `;
-
-    const categoryResult = await this.pool.query(insertCategoryQuery, [categoryName]);
-
-    if (categoryResult.rows.length > 0) {
-      categoryId =  categoryResult.rows[0].category_id;
-      return categoryId
-    } else {
-      const selectCategoryQuery = 'SELECT category_id FROM Category WHERE category_name = $1;';
-      const selectCategoryResult = await this.pool.query(selectCategoryQuery, [categoryName]);
-      categoryId =  selectCategoryResult.rows[0].category_id;
-      return categoryId
-    }
   }
 
   async insertIntoMandi(uuId, locationId, name) {
@@ -120,17 +98,37 @@ async insertIntoDistrictMaster(districtName, stateId) {
 
     return mandiId;
   }
-  async insertIntoContact(contactName, phone, email) {
+  async insertIntoContact(mandiId, contactType, contactDetail) {
     const insertContactQuery = `
-      INSERT INTO Contact (name, phone, email)
+      INSERT INTO Contact (Mandi_id, Contact_type, Contact_detail)
       VALUES ($1, $2, $3)
-      ON CONFLICT (phone) DO NOTHING
       RETURNING contact_id;
     `;
 
-    const contactResult = await this.pool.query(insertContactQuery, [contactName, phone, email]);
-    console.log(contactResult)
+    const contactResult = await this.pool.query(insertContactQuery, [mandiId, contactType, contactDetail]);
+    console.log(contactResult.rows[0].contact_id)
 
+    }
+    async insertIntoCategory(categoryName) {
+      let categoryId
+      const insertCategoryQuery = `
+        INSERT INTO Category (category_name)
+        VALUES ($1)
+        ON CONFLICT (category_name) DO NOTHING
+        RETURNING category_id;
+      `;
+  
+      const categoryResult = await this.pool.query(insertCategoryQuery, [categoryName]);
+  
+      if (categoryResult.rows.length > 0) {
+        categoryId =  categoryResult.rows[0].category_id;
+        return categoryId
+      } else {
+        const selectCategoryQuery = 'SELECT category_id FROM Category WHERE category_name = $1;';
+        const selectCategoryResult = await this.pool.query(selectCategoryQuery, [categoryName]);
+        categoryId =  selectCategoryResult.rows[0].category_id;
+        return categoryId
+      }
     }
   
   async insertIntoCommodity(cmdName, categoryId) {
@@ -165,16 +163,15 @@ async insertIntoDistrictMaster(districtName, stateId) {
   }
 
   async insertMandiData(data) {
-    const { uuId, name, stateName, districtName, cmdName, categoryName, gradeType, gradePrice , contact} = data.mandi;
+    const { uuId, name, stateName, districtName,categoryName, cmdName, gradeType, gradePrice , contact} = data.mandi;
     try {
       const stateId = await this.insertIntoStateMaster(stateName);
-      const districtId = await this.insertIntoDistrictMaster(districtName, stateId);
-      const locationId = await this.insertIntoLocation(districtId);
+      const locationId = await this.insertIntoLocation(districtName,stateId);
       const mandiId = await this.insertIntoMandi(uuId, locationId, name);
       const categoryId = await this.insertIntoCategory(categoryName);
       const commodityId = await this.insertIntoCommodity(cmdName, categoryId);
-      const { contactName, phone, email } = contact;
-      await this.insertIntoContact(contactName, phone, email);
+      const { contactType, contactDetail } = contact;
+      await this.insertIntoContact(mandiId,contactType,contactDetail);
       await this.insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
     } catch (err) {
       console.error('Error inserting mandi data:', err);
@@ -193,14 +190,13 @@ async insertIntoDistrictMaster(districtName, stateId) {
       name: 'John Doe',
       stateName: 'Karnataka',
       districtName: 'Bangalore',
+      categoryName: 'Fruit',
       cmdName: 'Apple',
-      categoryName: 'Fruits',
       gradeType: 'A',
       gradePrice: 125.00,
       contact: {
-        contactName: 'John Doe',
-        phone: '9876543210',
-        email: 'john.doe@example.com'
+        contactType: 'phone number',
+        contactDetail: '123456789'
       }
     }
   };
