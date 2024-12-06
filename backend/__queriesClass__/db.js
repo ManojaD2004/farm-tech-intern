@@ -105,8 +105,8 @@ async insertIntoDistrictMaster(districtName, stateId) {
       RETURNING contact_id;
     `;
 
-    const contactResult = await this.pool.query(insertContactQuery, [mandiId, contactType, contactDetail]);
-    console.log(contactResult.rows[0].contact_id)
+    await this.pool.query(insertContactQuery, [mandiId, contactType, contactDetail]);
+  
 
     }
     async insertIntoCategory(categoryName) {
@@ -159,7 +159,6 @@ async insertIntoDistrictMaster(districtName, stateId) {
     RETURNING *;
   `;
   const commodityPriceResult = await this.pool.query(insertCommodityPriceQuery, [commodityId, mandiId, gradeType, gradePrice]);
-  console.log('Inserted Commodity Price:', commodityPriceResult.rows[0]);
   }
 
   async insertMandiData(data) {
