@@ -150,13 +150,13 @@ async insertIntoDistrictMaster(districtName, stateId) {
   async insertMandiData(data) {
     const { uuId, name, stateName, districtName, cmdName, categoryName, gradeType, gradePrice } = data.mandi;
     try {
-      const stateId = await this.handleState(stateName);
-      const districtId = await this.handleDistrict(districtName, stateId);
-      const locationId = await this.handleLocation(districtId);
-      const mandiId = await this.handleMandi(uuId, locationId, name);
-      const categoryId = await this.handleCategory(categoryName);
-      const commodityId = await this.handleCommodity(cmdName, categoryId);
-      await this.handleCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
+      const stateId = await this.insertIntoStateMaster(stateName);
+      const districtId = await this.insertIntoDistrictMaster(districtName, stateId);
+      const locationId = await this.insertIntoLocation(districtId);
+      const mandiId = await this.insertIntoMandi(uuId, locationId, name);
+      const categoryId = await this.insertIntoCategory(categoryName);
+      const commodityId = await this.insertIntoCommodity(cmdName, categoryId);
+      await this.insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
     } catch (err) {
       console.error('Error inserting mandi data:', err);
     }
