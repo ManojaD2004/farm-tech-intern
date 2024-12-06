@@ -1,8 +1,8 @@
 const { Pool } = require('pg');
-
+require('dotenv').config();
 class MandiDatabase {
   constructor() {
-    const connectionString = ;
+    const connectionString = process.env.CONNECTION_STRING;
     this.pool = new Pool({ connectionString });
   }
   async connectDb() {
