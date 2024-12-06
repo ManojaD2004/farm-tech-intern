@@ -137,25 +137,26 @@ async insertIntoDistrictMaster(districtName, stateId) {
       return commodityId    
     }
   }
-  async insertIntoCommodityPrice(commodityId, locationId, mandiId, cmd_price) {
+  async insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice) {
     const insertCommodityPriceQuery = `
-      INSERT INTO commodity_price (commodity_id, location_id, mandi_id, grade_price)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *;
-    `;
-
-    const commodityPriceResult = await this.pool.query(insertCommodityPriceQuery, [commodityId, locationId, mandiId, cmd_price]);
-    console.log('Inserted Commodity Price:', commodityPriceResult.rows[0]);
-    return commodityPriceResult.rows[0];
+    INSERT INTO Commodity_Price (commodity_id, mandi_id, grade_type, grade_price)
+    VALUES ($1, $2, $3, $4)
+    RETURNING *;
+  `;
+  const commodityPriceResult = await this.pool.query(insertCommodityPriceQuery, [commodityId, mandiId, gradeType, gradePrice]);
+  console.log('Inserted Commodity Price:', commodityPriceResult.rows[0]);
   }
 
   async insertMandiData(data) {
-    const { phone_num, name, state, district, cmd_name, cmd_price } = data.mandi;
+    const { uuId, name, stateName, districtName, cmdName, categoryName, gradeType, gradePrice } = data.mandi;
     try {
-      const locationId = await this.insertIntoLocation(district, state);
-      const mandiId = await this.insertIntoMandi(phone_num, locationId, name);
-      const commodityId = await this.insertIntoCommodity(cmd_name);
-      await this.insertIntoCommodityPrice(commodityId, locationId, mandiId, cmd_price);
+      const stateId = await this.handleState(stateName);
+      const districtId = await this.handleDistrict(districtName, stateId);
+      const locationId = await this.handleLocation(districtId);
+      const mandiId = await this.handleMandi(uuId, locationId, name);
+      const categoryId = await this.handleCategory(categoryName);
+      const commodityId = await this.handleCommodity(cmdName, categoryId);
+      await this.handleCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
     } catch (err) {
       console.error('Error inserting mandi data:', err);
     }
