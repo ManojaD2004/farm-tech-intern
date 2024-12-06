@@ -4,7 +4,7 @@
     "main": "server.js",
     "scripts": {
         "start": "node server.js",
-        "test": "node newDb.js"
+        "test": "node ./__queriesClass__/testDb.js"
     },
     "author": "WhatsApp Team",
     "license": "MIT",
