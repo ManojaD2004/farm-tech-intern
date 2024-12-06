@@ -134,7 +134,8 @@ async insertIntoDistrictMaster(districtName, stateId) {
       const selectCommodityQuery = 'SELECT commodity_id FROM Commodity WHERE name = LOWER($1);';
       const selectCommodityResult = await this.pool.query(selectCommodityQuery, [cmdName]);
       commodityId =  selectCommodityResult.rows[0].commodity_id;
-      return commodityId    }
+      return commodityId    
+    }
   }
   async insertIntoCommodityPrice(commodityId, locationId, mandiId, cmd_price) {
     const insertCommodityPriceQuery = `
