@@ -40,6 +40,7 @@ async function main() {
               state: "Karanataka",
               district: "",
               cmd_name: "",
+              cmd_category:0.0,
               cmd_price: 0.0,
               flag: 0,
             },
@@ -61,12 +62,17 @@ async function main() {
           message.text.body === "Yes"
         ) {
           await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the commodity", message.id);
-          console.log(message?.interactive?.list_reply);
+          // console.log(message?.interactive?.list_reply);
         } else if (item[message.from].mandi.flag === 3) {
-          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the" + " " + message.text.body + " " + "Price", message.id);
-          console.log(message?.interactive?.list_reply);
-        } else if (
-          item[message.from].mandi.flag === 4 ||
+          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the" + " " + message.text.body + " " + "Grade(1,2,3)", message.id);
+          // console.log(message?.interactive?.list_reply);
+        }
+        else if (item[message.from].mandi.flag === 4) {
+          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the" + " " + item[message.from].mandi.cmd_name + " " + "Price", message.id);
+          // console.log(message?.interactive?.list_reply);
+        }
+         else if (
+          item[message.from].mandi.flag === 5 ||
           (message.text.body === "Hi" &&
             item[message.from].mandi.name !== "" &&
             item[message.from].mandi.district !== "")
@@ -85,7 +91,7 @@ async function main() {
           await waWebhook.sendMessage(message.from, business_phone_number_id, "Thank you For sharing", message.id);
           // console.log(message?.interactive?.list_reply);
         }
-        
+
         // mark incoming message as read
         if (
           message?.from &&
@@ -105,10 +111,15 @@ async function main() {
         } else if (message?.from && item[message.from].mandi.flag === 3) {
           item[message.from].mandi.cmd_name = message.text.body;
           console.log(item[message.from].mandi.cmd_name);
-        } else if (message?.from && item[message.from].mandi.flag === 4) {
+        }
+        else if (message?.from && item[message.from].mandi.flag === 4) {
+          item[message.from].mandi.cmd_category = Number(message.text.body);
+          console.log(item[message.from].mandi.cmd_category);
+        }
+         else if (message?.from && item[message.from].mandi.flag === 5) {
           item[message.from].mandi.cmd_price = Number(message.text.body);
           mandiJSON = JSON.stringify(item[message.from]);
-          inserMandiData(item[message.from]);
+          // inserMandiData(item[message.from]);
           console.log(item[message.from].mandi.cmd_price);
           console.log(mandiJSON);
         }
