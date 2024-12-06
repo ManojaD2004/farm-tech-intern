@@ -14,6 +14,7 @@ class MandiDatabase {
     }
   }
   async insertIntoStateMaster(stateName){
+    let stateId
     const insertStateQuery = `
     INSERT INTO State_Master (state_name)
     VALUES ($1)
@@ -34,6 +35,7 @@ class MandiDatabase {
 }
 
 async insertIntoDistrictMaster(districtName, stateId) {
+  let districtId
   const insertDistrictQuery = `
     INSERT INTO District_Master (district_name, state_id)
     VALUES ($1, $2)
@@ -76,6 +78,7 @@ async insertIntoDistrictMaster(districtName, stateId) {
   
 
   async insertIntoCategory(categoryName) {
+    let categoryId
     const insertCategoryQuery = `
       INSERT INTO Category (category_name)
       VALUES ($1)
@@ -118,6 +121,7 @@ async insertIntoDistrictMaster(districtName, stateId) {
     return mandiId;
   }
   async insertIntoCommodity(cmdName, categoryId) {
+    let commodityId
     const insertCommodityQuery = `
       INSERT INTO Commodity (name, category_id)
       VALUES (LOWER($1), $2)
@@ -162,4 +166,5 @@ async insertIntoDistrictMaster(districtName, stateId) {
     }
   }
 }
+
 module.exports = {MandiDatabase}
