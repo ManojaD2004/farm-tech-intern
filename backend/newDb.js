@@ -86,7 +86,7 @@ class MandiDatabase {
     }
   }
 }
-// module.exports = {MandiDatabase}
+
 (async () => {
     const db = new MandiDatabase();
   
