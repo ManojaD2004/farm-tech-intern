@@ -1,3 +1,4 @@
+//Run npm run test to test the database queries 
 const { Pool } = require('pg');
 require('dotenv').config();
 class MandiDatabase {
