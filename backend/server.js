@@ -1,25 +1,27 @@
 const express = require("express");
-const axios = require("axios");
 const cors = require("cors");
 const { configDotenv } = require("dotenv");
 const { state } = require("./district.js");
-const { inserMandiData } = require("./db.js");
+const { WhatsAppWebhook } = require("./whatsappWebhook.js");
+// const { inserMandiData } = require("./db.js");
 
 async function main() {
+
   configDotenv({ path: "./.env.local" });
   const app = express();
   app.use(express.json());
   app.use(cors());
-  
+
   // console.log(process.env.WEBHOOK_VERIFY_TOKEN);
   const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN, PORT } = process.env;
+  const waWebhook = new WhatsAppWebhook(GRAPH_API_TOKEN);
   let item = {};
   let mandiJSON;
   let District = "";
   for (let key in state.karnataka) {
     District += key + " " + state.karnataka[key] + "\n";
   }
-  
+
   app.post("/webhook", async (req, res) => {
     try {
       const message = req.body.entry?.[0]?.changes[0]?.value?.messages?.[0];
@@ -30,7 +32,10 @@ async function main() {
         if (!item[message.from]) {
           item[message.from] = {
             mandi: {
-              phone_num: "",
+              contact: {
+                contactType: "phone no",
+                contactDetail: "",
+              },
               name: "",
               state: "Karanataka",
               district: "",
@@ -40,89 +45,26 @@ async function main() {
             },
           };
         }
-        item[message.from].mandi.phone_num = message.from;
+        item[message.from].mandi.contact.contactDetail = message.from;
         if (item[message.from].mandi.flag === 0) {
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
-            headers: {
-              Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              text: {
-                body: "Enter your Name",
-              },
-              context: {
-                message_id: message.id, // shows the message as a reply to the original user message
-              },
-            },
-          });
+          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter your Name", message.id);
         } else if (item[message.from].mandi.flag === 1) {
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
-            headers: {
-              Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              text: {
-                body:
-                  "Greetings to" +
-                  " " +
-                  message.text.body +
-                  " " +
-                  " please enter your district to begin the next phase of the process." +
-                  "\n" +
-                  District,
-              },
-              context: {
-                message_id: message.id, // shows the message as a reply to the original user message
-              },
-            },
-          });
+          await waWebhook.sendMessage(message.from, business_phone_number_id, "Greetings to" +
+            " " +
+            message.text.body +
+            " " +
+            " please enter your district to begin the next phase of the process." +
+            "\n" +
+            District, message.id);
         } else if (
           item[message.from].mandi.flag === 2 ||
           message.text.body === "Yes"
         ) {
+          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the commodity", message.id);
           console.log(message?.interactive?.list_reply);
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
-            headers: {
-              Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              text: { body: "Enter the commodity" },
-              context: {
-                message_id: message.id, // shows the message as pa reply to the original user message
-              },
-            },
-          });
         } else if (item[message.from].mandi.flag === 3) {
+          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the" + " " + message.text.body + " " + "Price", message.id);
           console.log(message?.interactive?.list_reply);
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
-            headers: {
-              Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              text: {
-                body: "Enter the" + " " + message.text.body + " " + "Price",
-              },
-              context: {
-                message_id: message.id, // shows the message as pa reply to the original user message
-              },
-            },
-          });
         } else if (
           item[message.from].mandi.flag === 4 ||
           (message.text.body === "Hi" &&
@@ -134,73 +76,17 @@ async function main() {
             item[message.from].mandi.name !== "" &&
             item[message.from].mandi.district !== ""
           ) {
-            console.log(message?.interactive?.list_reply);
-            await axios({
-              method: "POST",
-              url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
-              headers: {
-                Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-              },
-              data: {
-                messaging_product: "whatsapp",
-                to: message.from,
-                text: {
-                  body: "Welcome back" + " " + item[message.from].mandi.name,
-                },
-                context: {
-                  message_id: message.id, // shows the message as pa reply to the original user message
-                },
-              },
-            });
+            await waWebhook.sendMessage(message.from, business_phone_number_id, "Welcome back" + " " + item[message.from].mandi.name, message.id);
+            // console.log(message?.interactive?.list_reply);
           }
-          console.log(message?.interactive?.list_reply);
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
-            headers: {
-              Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              text: { body: "Want to add more commodity" },
-              context: {
-                message_id: message.id, // shows the message as pa reply to the original user message
-              },
-            },
-          });
+          await waWebhook.sendMessage(message.from, business_phone_number_id, "Want to add more commodity", message.id);
+          // console.log(message?.interactive?.list_reply);
         } else if (message.text.body === "No") {
-          console.log(message?.interactive?.list_reply);
-          await axios({
-            method: "POST",
-            url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
-            headers: {
-              Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-            },
-            data: {
-              messaging_product: "whatsapp",
-              to: message.from,
-              text: { body: "Thank you For sharing" },
-              context: {
-                message_id: message.id, // shows the message as pa reply to the original user message
-              },
-            },
-          });
+          await waWebhook.sendMessage(message.from, business_phone_number_id, "Thank you For sharing", message.id);
+          // console.log(message?.interactive?.list_reply);
         }
-  
+        
         // mark incoming message as read
-        await axios({
-          method: "POST",
-          url: `https://graph.facebook.com/v21.0/${business_phone_number_id}/messages`,
-          headers: {
-            Authorization: `Bearer ${GRAPH_API_TOKEN}`,
-          },
-          data: {
-            messaging_product: "whatsapp",
-            status: "read",
-            message_id: message.id,
-          },
-        });
         if (
           message?.from &&
           item[message.from].mandi.name === "" &&
@@ -232,7 +118,7 @@ async function main() {
         item[message.from].mandi.flag++;
         console.log(item[message.from].mandi.flag);
       }
-  
+
       // Logic
       res.sendStatus(200);
     } catch (error) {
@@ -241,12 +127,12 @@ async function main() {
     }
     // log incoming messages
   });
-  
+
   app.get("/webhook", (req, res) => {
     const mode = req.query["hub.mode"];
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
-  
+
     // check the mode and token sent are correct
     if (mode === "subscribe" && token === WEBHOOK_VERIFY_TOKEN) {
       // respond with 200 OK and challenge token from the request
@@ -257,15 +143,14 @@ async function main() {
       res.sendStatus(403);
     }
   });
-  
+
   app.get("/", (req, res) => {
     res.send(`<pre>Nothing to see here.
   Checkout README.md to start.</pre>`);
   });
-  
+
   app.listen(PORT, () => {
     console.log(`Server is listening on port: ${PORT}`);
   });
 }
-
 main();
