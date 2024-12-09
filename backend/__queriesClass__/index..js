@@ -34,6 +34,8 @@ app.get('/mandi-detail',async function(req,res){
  res.json({name :userMandiNames,id : userMandiIds})
 })
 
+
+
 app.get('/hello' , function(req,res){
   res.send('Hello Champ')
 })

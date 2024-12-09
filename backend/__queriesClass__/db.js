@@ -156,6 +156,7 @@ async getMandiNames(mandiIds) {
 }
 
 
+
   async insertMandiData(data) {
     const { uuId, name, stateName, districtName,categoryName, cmdName, gradeType, gradePrice , contact} = data.mandi;
     try {
