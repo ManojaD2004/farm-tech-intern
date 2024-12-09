@@ -54,7 +54,7 @@ class MandiDatabase {
 
   async insertIntoMandi(locationId, name) {
     let mandiId;
-    const selectMandiQuery = `SELECT mandi_id FROM Mandi WHERE loacation_id = $1 and name = $2;`
+    const selectMandiQuery = `SELECT mandi_id FROM Mandi WHERE location_id = $1 and name = $2;`
     const selectMandiResult = await this.pool.query(selectMandiQuery, [locationId,name]);
     if(selectMandiResult.rows.length === 0){
       const insertMandiQuery = `
@@ -141,8 +141,8 @@ class MandiDatabase {
     return userGetResult.rows.length > 0;
 }
 
-async getMandiIds(contactDetail){  return selectMandiIDResult.rows;
-  const selectMandiIDQuery = `SELECT mandi_id FROM CONTACT WHERE contact_detail = $1 `
+async getMandiIds(contactDetail){
+  const selectMandiIDQuery = `SELECT  DISTINCT mandi_id FROM CONTACT WHERE contact_detail = $1 `
   const selectMandiIDResult = await this.pool.query(selectMandiIDQuery,[contactDetail])
   const mandiIds = selectMandiIDResult.rows.map(row => row.mandi_id);
   return mandiIds

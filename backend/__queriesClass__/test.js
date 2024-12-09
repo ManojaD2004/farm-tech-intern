@@ -7,6 +7,7 @@ const {MandiDatabase} = require("./db")
   app.use(express.json());
   app.use(cors());
   const MandiDB = new MandiDatabase()
+  MandiDB.connectDb()
 app.post('/create-user', async function(req,res) {
   const { name, stateName, districtName,contact} = req.body;
   const stateId = await MandiDB.insertIntoStateMaster(stateName)
@@ -14,6 +15,7 @@ app.post('/create-user', async function(req,res) {
   const mandiId = await MandiDB.insertIntoMandi(locationId, name);
   const { contactType, contactDetail } = contact;
   await MandiDB.insertIntoContact(mandiId,contactType,contactDetail);
+  res.send({mandiId : `${mandiId}`});
     
 }
 )
@@ -25,20 +27,20 @@ app.post('/insert-commodity', async function(req,res){
   await MandiDB.insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
 })
 
-app.get('/mandi-detail',async function(res,req){
-  const  {contactDetail} = req.body
+app.get('/mandi-detail',async function(req,res){
+  const { contactDetail } = req.body;
  const userMandiIds = await MandiDB.getMandiIds(contactDetail)
  const userMandiNames = await MandiDB.getMandiNames(userMandiIds)
- res.json(userMandiNames)
+ res.json({name :userMandiNames,id : userMandiIds})
 })
 
-app.get('/hello' , function(res,req){
+app.get('/hello' , function(req,res){
   res.send('Hello Champ')
 })
 
 app.get('/user', async function(req,res){
 const {contactDetail} = req.body 
-const userExists = MandiDB.getUserExist(contactDetail)
+const userExists = await MandiDB.getUserExist(contactDetail)
 res.send({exists : `${userExists}`})
 })
 app.listen(5000, () => {
