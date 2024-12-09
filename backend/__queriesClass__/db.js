@@ -133,11 +133,11 @@ return mandiId
     return userGetResult.rows.length > 0;
 }
 
-async getMandiIds(contactDetail){
-  const selectMandiIDQuery = `SELECT  DISTINCT mandi_id FROM CONTACT WHERE contact_detail = $1 `
+async getMandiId(contactDetail){
+  const selectMandiIDQuery = `SELECT  mandi_id FROM CONTACT WHERE contact_detail = $1 `
   const selectMandiIDResult = await this.pool.query(selectMandiIDQuery,[contactDetail])
-  const mandiIds = selectMandiIDResult.rows.map(row => row.mandi_id);
-  return mandiIds
+  const mandiId = selectMandiIDResult.rows[0].mandi_id
+  return mandiId
 }
 
 async getMandiNames(mandiIds) {
