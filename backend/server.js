@@ -6,7 +6,6 @@ const { WhatsAppWebhook } = require("./whatsappWebhook.js");
 // const { inserMandiData } = require("./db.js");
 
 async function main() {
-
   configDotenv({ path: "./.env.local" });
   const app = express();
   app.use(express.json());
@@ -40,7 +39,7 @@ async function main() {
               state: "Karanataka",
               district: "",
               cmd_name: "",
-              cmd_category:0.0,
+              cmd_category: 0.0,
               cmd_price: 0.0,
               flag: 0,
             },
@@ -48,30 +47,57 @@ async function main() {
         }
         item[message.from].mandi.contact.contactDetail = message.from;
         if (item[message.from].mandi.flag === 0) {
-          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter your Name", message.id);
+          await waWebhook.sendMessage(
+            message.from,
+            business_phone_number_id,
+            "Enter your Name",
+            message.id
+          );
         } else if (item[message.from].mandi.flag === 1) {
-          await waWebhook.sendMessage(message.from, business_phone_number_id, "Greetings to" +
-            " " +
-            message.text.body +
-            " " +
-            " please enter your district to begin the next phase of the process." +
-            "\n" +
-            District, message.id);
+          await waWebhook.sendMessage(
+            message.from,
+            business_phone_number_id,
+            "Greetings to" +
+              " " +
+              message.text.body +
+              " " +
+              " please enter your district to begin the next phase of the process." +
+              "\n" +
+              District,
+            message.id
+          );
         } else if (
           item[message.from].mandi.flag === 2 ||
           message.text.body === "Yes"
         ) {
-          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the commodity", message.id);
+          await waWebhook.sendMessage(
+            message.from,
+            business_phone_number_id,
+            "Enter the commodity",
+            message.id
+          );
           // console.log(message?.interactive?.list_reply);
         } else if (item[message.from].mandi.flag === 3) {
-          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the" + " " + message.text.body + " " + "Grade(1,2,3)", message.id);
+          await waWebhook.sendMessage(
+            message.from,
+            business_phone_number_id,
+            "Enter the" + " " + message.text.body + " " + "Grade(1,2,3)",
+            message.id
+          );
           // console.log(message?.interactive?.list_reply);
-        }
-        else if (item[message.from].mandi.flag === 4) {
-          await waWebhook.sendMessage(message.from, business_phone_number_id, "Enter the" + " " + item[message.from].mandi.cmd_name + " " + "Price", message.id);
+        } else if (item[message.from].mandi.flag === 4) {
+          await waWebhook.sendMessage(
+            message.from,
+            business_phone_number_id,
+            "Enter the" +
+              " " +
+              item[message.from].mandi.cmd_name +
+              " " +
+              "Price",
+            message.id
+          );
           // console.log(message?.interactive?.list_reply);
-        }
-         else if (
+        } else if (
           item[message.from].mandi.flag === 5 ||
           (message.text.body === "Hi" &&
             item[message.from].mandi.name !== "" &&
@@ -82,13 +108,28 @@ async function main() {
             item[message.from].mandi.name !== "" &&
             item[message.from].mandi.district !== ""
           ) {
-            await waWebhook.sendMessage(message.from, business_phone_number_id, "Welcome back" + " " + item[message.from].mandi.name, message.id);
+            await waWebhook.sendMessage(
+              message.from,
+              business_phone_number_id,
+              "Welcome back" + " " + item[message.from].mandi.name,
+              message.id
+            );
             // console.log(message?.interactive?.list_reply);
           }
-          await waWebhook.sendMessage(message.from, business_phone_number_id, "Want to add more commodity", message.id);
+          await waWebhook.sendMessage(
+            message.from,
+            business_phone_number_id,
+            "Want to add more commodity",
+            message.id
+          );
           // console.log(message?.interactive?.list_reply);
         } else if (message.text.body === "No") {
-          await waWebhook.sendMessage(message.from, business_phone_number_id, "Thank you For sharing", message.id);
+          await waWebhook.sendMessage(
+            message.from,
+            business_phone_number_id,
+            "Thank you For sharing",
+            message.id
+          );
           // console.log(message?.interactive?.list_reply);
         }
 
@@ -105,18 +146,17 @@ async function main() {
           item[message.from].mandi.district === "" &&
           item[message.from].mandi.flag === 2
         ) {
-          item[message.from].mandi.district = state.karnataka[message.text.body];
+          item[message.from].mandi.district =
+            state.karnataka[message.text.body];
           console.log(item[message.from].mandi.state);
           console.log(item[message.from].mandi.district);
         } else if (message?.from && item[message.from].mandi.flag === 3) {
           item[message.from].mandi.cmd_name = message.text.body;
           console.log(item[message.from].mandi.cmd_name);
-        }
-        else if (message?.from && item[message.from].mandi.flag === 4) {
+        } else if (message?.from && item[message.from].mandi.flag === 4) {
           item[message.from].mandi.cmd_category = Number(message.text.body);
           console.log(item[message.from].mandi.cmd_category);
-        }
-         else if (message?.from && item[message.from].mandi.flag === 5) {
+        } else if (message?.from && item[message.from].mandi.flag === 5) {
           item[message.from].mandi.cmd_price = Number(message.text.body);
           mandiJSON = JSON.stringify(item[message.from]);
           // inserMandiData(item[message.from]);
@@ -159,9 +199,12 @@ async function main() {
     res.send(`<pre>Nothing to see here.
   Checkout README.md to start.</pre>`);
   });
-  
 
-  
+  app.get("/hello", (req, res) => {
+    console.log("Hit /hello");
+    res.send(`Hello Tiger!`);
+  });
+
   app.listen(PORT, () => {
     console.log(`Server is listening on port: ${PORT}`);
   });
