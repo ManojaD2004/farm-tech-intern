@@ -34,32 +34,6 @@ class MandiDatabase {
     return stateId
   }
 }
-
-async insertIntoDistrictMaster(districtName, stateId) {
-  let districtId
-  const insertDistrictQuery = `
-    INSERT INTO District_Master (district_name, state_id)
-    VALUES ($1, $2)
-    ON CONFLICT (district_name, state_id) DO NOTHING
-    RETURNING district_id;
-  `;
-
-  const districtResult = await this.pool.query(insertDistrictQuery, [districtName, stateId]);
-
-  if (districtResult.rows.length > 0) {
-    districtId =  districtResult.rows[0].district_id;
-    return districtId
-  } else {
-    const selectDistrictQuery = `
-      SELECT district_id 
-      FROM District_Master 
-      WHERE district_name = $1 AND state_id = $2;
-    `;
-    const selectDistrictResult = await this.pool.query(selectDistrictQuery, [districtName, stateId]);
-    districtId =  selectDistrictResult.rows[0].district_id;
-    return districtId
-  }
-}
   
   async insertIntoLocation(districtName,stateId) {
     let locationId;
