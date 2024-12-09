@@ -25,6 +25,15 @@ app.post('/insert-commodity', async function(req,res){
   await MandiDB.insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
 })
 
+app.get('/mandi-detail',async function(res,req){
+  const  {contactDetail} = req.body
+ 
+})
+
+app.get('/hello' , function(res,req){
+  res.send('Hello Champ')
+})
+
 app.get('/user', async function(req,res){
 const {contactDetail} = req.body 
 const userExists = MandiDB.getUserExist(contactDetail)

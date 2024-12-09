@@ -141,6 +141,20 @@ class MandiDatabase {
     return userGetResult.rows.length > 0;
 }
 
+async getManiDetail(contactDetail){
+  const selectMandiIDQuery = `SELECT mandi_id FROM CONTACT WHERE contact_detail = $1 `
+  const selectMandiIDResult = await this.pool.query(selectMandiIDQuery,[contactDetail])
+  const mandiIds = selectMandiIDResult.rows.map(row => row.mandi_id);
+  return mandiIds
+}
+
+async getMandiNames(mandiIds) {
+  const selectMandiNameQuery = `SELECT name FROM Mandi WHERE mandi_id = ANY($1);`;
+  const selectMandiNameResult = await this.pool.query(selectMandiNameQuery, [mandiIds]);
+  const mandiNames =  selectMandiNameResult.rows.map(row => row.name); 
+  return mandiNames
+}
+
 
   async insertMandiData(data) {
     const { uuId, name, stateName, districtName,categoryName, cmdName, gradeType, gradePrice , contact} = data.mandi;
