@@ -213,13 +213,17 @@ async function main() {
     try {
       console.log("Hit /create-user");
       const { name, stateName, districtName, contact } = req.body;
+      const { contactType, contactDetail } = contact;
+      const userExists = MandiDB.getUserExist(contactDetail)
+      if(userExists){
+        res.status(210).json({mssg : "user already exists !"})
+      }
       const stateId = await MandiDB.insertIntoStateMaster(stateName);
       const locationId = await MandiDB.insertIntoLocation(
         districtName,
         stateId
       );
       const mandiId = await MandiDB.insertIntoMandi(locationId, name);
-      const { contactType, contactDetail } = contact;
       await MandiDB.insertIntoContact(mandiId, contactType, contactDetail);
       res.status(200).send({ mandiId: `${mandiId}` });
     } catch (error) {
