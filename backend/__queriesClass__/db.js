@@ -52,25 +52,17 @@ class MandiDatabase {
 
   async insertIntoMandi(locationId, name) {
     let mandiId;
-    const selectMandiQuery = `SELECT mandi_id FROM Mandi WHERE location_id = $1 and name = $2;`
-    const selectMandiResult = await this.pool.query(selectMandiQuery, [locationId,name]);
-    if(selectMandiResult.rows.length === 0){
+    
       const insertMandiQuery = `
       INSERT INTO Mandi (location_id, name)
       VALUES ($1, $2)
-      ON CONFLICT (uu_id) DO NOTHING
       RETURNING mandi_id;
     `;
   
     const mandiResult = await this.pool.query(insertMandiQuery, [locationId, name]);
     mandiId = mandiResult.rows[0].mandi_id;
-    }
-    else{
-      mandiId = selectMandiResult.rows[0].mandi_id
-    }
-        return mandiId;
+return mandiId
   }
-  
 
   
   async insertIntoContact(mandiId, contactType, contactDetail) {
@@ -153,8 +145,30 @@ async getMandiNames(mandiIds) {
   return mandiNames
 }
 
+async getCategoriesAndCommoditiesByMandiIds(mandiIds) {
 
+    const query = `
+      SELECT 
+        cat.Category_id,
+        cat.Category_name,
+        co.Commodity_id,
+        co.Name AS commodity_name,
+        cp.Grade_Type,
+        cp.Grade_Price,
+        m.Name AS mandi_name
+      FROM Commodity_Price cp
+      JOIN Commodity co ON co.Commodity_id = cp.Commodity_id
+      JOIN Category cat ON cat.Category_id = co.Category_id
+      JOIN Mandi m ON m.Mandi_id = cp.Mandi_id
+      WHERE cp.Mandi_id = ANY($1::int[]);
+    `;
 
+    const result = await this.pool.query(query, [mandiIds]);
+
+    console.log('Fetched Results:', result.rows);
+
+    return result.rows;
+}
   async insertMandiData(data) {
     const { uuId, name, stateName, districtName,categoryName, cmdName, gradeType, gradePrice , contact} = data.mandi;
     try {
