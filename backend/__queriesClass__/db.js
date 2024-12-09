@@ -100,23 +100,25 @@ return mandiId
   
   
   async insertIntoCommodity(cmdName, categoryId) {
-    let commodityId;
-    const selectCommodityQuery = `SELECT commodity_id FROM Commodity WHERE name = LOWER($1) AND category_id = $2;`;
-    const selectCommodityResult = await this.pool.query(selectCommodityQuery, [cmdName, categoryId]);
+    let commodityId
+    const insertCommodityQuery = `
+      INSERT INTO Commodity (name, category_id)
+      VALUES (LOWER($1), $2)
+      ON CONFLICT (name) DO NOTHING
+      RETURNING commodity_id;
+    `;
 
-    if (selectCommodityResult.rows.length === 0) {
-        const insertCommodityQuery = `
-        INSERT INTO Commodity (name, category_id)
-        VALUES (LOWER($1), $2)
-        ON CONFLICT (name) DO NOTHING
-        RETURNING commodity_id;
-      `;
-        const commodityResult = await this.pool.query(insertCommodityQuery, [cmdName, categoryId]);
-        commodityId = commodityResult.rows[0].commodity_id;
+    const commodityResult = await this.pool.query(insertCommodityQuery, [cmdName, categoryId]);
+
+    if (commodityResult.rows.length > 0) {
+      commodityId =  commodityResult.rows[0].commodity_id;
+      return commodityId
     } else {
-        commodityId = selectCommodityResult.rows[0].commodity_id;
+      const selectCommodityQuery = 'SELECT commodity_id FROM Commodity WHERE name = LOWER($1);';
+      const selectCommodityResult = await this.pool.query(selectCommodityQuery, [cmdName]);
+      commodityId =  selectCommodityResult.rows[0].commodity_id;
+      return commodityId    
     }
-    return commodityId;
 }
 
   async insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice) {
