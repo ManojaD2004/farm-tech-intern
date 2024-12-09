@@ -210,25 +210,45 @@ async function main() {
   });
 
   app.post("/create-user", async function (req, res) {
-    const { name, stateName, districtName, contact } = req.body;
-    const stateId = await MandiDB.insertIntoStateMaster(stateName);
-    const locationId = await MandiDB.insertIntoLocation(districtName, stateId);
-    const mandiId = await MandiDB.insertIntoMandi(locationId, name);
-    const { contactType, contactDetail } = contact;
-    await MandiDB.insertIntoContact(mandiId, contactType, contactDetail);
-    res.send({ mandiId: `${mandiId}` });
+    try {
+      console.log("Hit /create-user");
+      const { name, stateName, districtName, contact } = req.body;
+      const stateId = await MandiDB.insertIntoStateMaster(stateName);
+      const locationId = await MandiDB.insertIntoLocation(
+        districtName,
+        stateId
+      );
+      const mandiId = await MandiDB.insertIntoMandi(locationId, name);
+      const { contactType, contactDetail } = contact;
+      await MandiDB.insertIntoContact(mandiId, contactType, contactDetail);
+      res.status(200).send({ mandiId: `${mandiId}` });
+    } catch (error) {
+      res.status(400).send(error);
+      console.log(error);
+    }
   });
 
   app.post("/insert-commodity", async function (req, res) {
-    const { categoryName, cmdName, gradeType, gradePrice, mandiId } = req.body;
-    const categoryId = await MandiDB.insertIntoCategory(categoryName);
-    const commodityId = await MandiDB.insertIntoCommodity(cmdName, categoryId);
-    await MandiDB.insertIntoCommodityPrice(
-      commodityId,
-      mandiId,
-      gradeType,
-      gradePrice
-    );
+    try {
+      console.log("Hit /insert-commodity");
+      const { categoryName, cmdName, gradeType, gradePrice, mandiId } =
+        req.body;
+      const categoryId = await MandiDB.insertIntoCategory(categoryName);
+      const commodityId = await MandiDB.insertIntoCommodity(
+        cmdName,
+        categoryId
+      );
+      await MandiDB.insertIntoCommodityPrice(
+        commodityId,
+        mandiId,
+        gradeType,
+        gradePrice
+      );
+      res.status(200).json({ mssg: "inserted" });
+    } catch (error) {
+      res.status(400).send(error);
+      console.log(error);
+    }
   });
 
   app.post("/mandi-detail", async function (req, res) {
@@ -236,6 +256,17 @@ async function main() {
     const userMandiIds = await MandiDB.getMandiIds(contactDetail);
     const userMandiNames = await MandiDB.getMandiNames(userMandiIds);
     res.json({ name: userMandiNames, id: userMandiIds });
+  });
+
+  app.post("/categories-commodities", async (req, res) => {
+    try {
+      const { mandiId } = req.body;
+      const data = await MandiDB.getCategoriesAndCommoditiesByMandiIds(mandiId);
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(400).send(error);
+      console.log(error);
+    }
   });
 
   app.post("/user", async function (req, res) {

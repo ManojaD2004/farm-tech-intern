@@ -45,11 +45,6 @@ app.get('/categories-commodities', async (req, res) => {
  
 });
 
-
-app.get('/hello' , function(req,res){
-  res.send('Hello Champ')
-})
-
 app.get('/user', async function(req,res){
 const {contactDetail} = req.body 
 const userExists = await MandiDB.getUserExist(contactDetail)
