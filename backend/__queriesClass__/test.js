@@ -27,7 +27,9 @@ app.post('/insert-commodity', async function(req,res){
 
 app.get('/mandi-detail',async function(res,req){
   const  {contactDetail} = req.body
- 
+ const userMandiIds = await MandiDB.getMandiIds(contactDetail)
+ const userMandiNames = await MandiDB.getMandiNames(userMandiIds)
+ res.json(userMandiNames)
 })
 
 app.get('/hello' , function(res,req){
@@ -38,4 +40,7 @@ app.get('/user', async function(req,res){
 const {contactDetail} = req.body 
 const userExists = MandiDB.getUserExist(contactDetail)
 res.send({exists : `${userExists}`})
+})
+app.listen(5000, () => {
+ console.log('server started on http://localhost:5000')
 })

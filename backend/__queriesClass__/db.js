@@ -141,7 +141,7 @@ class MandiDatabase {
     return userGetResult.rows.length > 0;
 }
 
-async getManiDetail(contactDetail){
+async getMandiIds(contactDetail){  return selectMandiIDResult.rows;
   const selectMandiIDQuery = `SELECT mandi_id FROM CONTACT WHERE contact_detail = $1 `
   const selectMandiIDResult = await this.pool.query(selectMandiIDQuery,[contactDetail])
   const mandiIds = selectMandiIDResult.rows.map(row => row.mandi_id);
