@@ -54,25 +54,27 @@ class MandiDatabase {
 
   async insertIntoMandi(locationId, name) {
     let mandiId;
-    const insertMandiQuery = `
+    const selectMandiQuery = `SELECT mandi_id FROM Mandi WHERE loacation_id = $1 and name = $2;`
+    const selectMandiResult = await this.pool.query(selectMandiQuery, [locationId,name]);
+    if(selectMandiResult.rows.length === 0){
+      const insertMandiQuery = `
       INSERT INTO Mandi (location_id, name)
       VALUES ($1, $2)
       ON CONFLICT (uu_id) DO NOTHING
       RETURNING mandi_id;
     `;
-
-    const mandiResult = await this.pool.query(insertMandiQuery, [uuId, locationId, name]);
-
-    if (mandiResult.rows.length > 0) {
-      mandiId = mandiResult.rows[0].mandi_id;
-    } else {
-      const selectMandiQuery = `SELECT mandi_id FROM Mandi WHERE loacation_id = $1 and name = $2;`
-      const selectMandiResult = await this.pool.query(selectMandiQuery, [uuId]);
-      mandiId = selectMandiResult.rows[0].mandi_id;
+  
+    const mandiResult = await this.pool.query(insertMandiQuery, [locationId, name]);
+    mandiId = mandiResult.rows[0].mandi_id;
     }
-
-    return mandiId;
+    else{
+      mandiId = selectMandiResult.rows[0].mandi_id
+    }
+        return mandiId;
   }
+  
+
+  
   async insertIntoContact(mandiId, contactType, contactDetail) {
     const insertContactQuery = `
       INSERT INTO Contact (Mandi_id, Contact_type, Contact_detail)
@@ -85,26 +87,25 @@ class MandiDatabase {
 
     }
     async insertIntoCategory(categoryName) {
-      let categoryId
-      const insertCategoryQuery = `
-        INSERT INTO Category (category_name)
-        VALUES ($1)
-        ON CONFLICT (category_name) DO NOTHING
-        RETURNING category_id;
-      `;
+      let categoryId;
+      const selectCategoryQuery = `SELECT category_id FROM Category WHERE category_name = $1;`;
+      const selectCategoryResult = await this.pool.query(selectCategoryQuery, [categoryName]);
   
-      const categoryResult = await this.pool.query(insertCategoryQuery, [categoryName]);
-  
-      if (categoryResult.rows.length > 0) {
-        categoryId =  categoryResult.rows[0].category_id;
-        return categoryId
+      if (selectCategoryResult.rows.length === 0) {
+          const insertCategoryQuery = `
+          INSERT INTO Category (category_name)
+          VALUES ($1)
+          ON CONFLICT (category_name) DO NOTHING
+          RETURNING category_id;
+        `;
+          const categoryResult = await this.pool.query(insertCategoryQuery, [categoryName]);
+          categoryId = categoryResult.rows[0].category_id;
       } else {
-        const selectCategoryQuery = 'SELECT category_id FROM Category WHERE category_name = $1;';
-        const selectCategoryResult = await this.pool.query(selectCategoryQuery, [categoryName]);
-        categoryId =  selectCategoryResult.rows[0].category_id;
-        return categoryId
+          categoryId = selectCategoryResult.rows[0].category_id;
       }
-    }
+      return categoryId;
+  }
+  
   
   async insertIntoCommodity(cmdName, categoryId) {
     let commodityId
