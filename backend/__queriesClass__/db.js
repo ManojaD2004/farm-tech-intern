@@ -157,6 +157,7 @@ async getCategoriesAndCommoditiesByMandiIds(mandiIds) {
         co.Name AS commodity_name,
         cp.Grade_Type,
         cp.Grade_Price,
+        cp.Updated_At,
         m.Name AS mandi_name
       FROM Commodity_Price cp
       JOIN Commodity co ON co.Commodity_id = cp.Commodity_id
