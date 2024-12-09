@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const { configDotenv } = require("dotenv")
-const {MandiDatabase} = require("./db")
+const {MandiDatabase} = require("./db");
+const { default: axios } = require("axios");
   configDotenv({ path: "./.env.local" });
   const app = express();
   app.use(express.json());
@@ -50,6 +51,41 @@ const {contactDetail} = req.body
 const userExists = await MandiDB.getUserExist(contactDetail)
 res.send({exists : `${userExists}`})
 })
+app.post('/gemini', async (req, res) => {
+  const { input } = req.body;
+  console.log(input)
+const Prompt ="Respond with only one word: Is the given input a fruit or a vegetable? ";
+
+  try {
+    const geminiApiResponse = await Gemini(Prompt,input);
+
+    res.status(200).json({
+      input,
+      aiResponse: geminiApiResponse,
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error processing the request' });
+  }
+});
 app.listen(5000, () => {
  console.log('server started on http://localhost:5000')
 })
+async function Gemini(Prompt , input) {
+  const requestBody = {
+    contents: [{ parts: [{ text: Prompt + input }] }],
+  };
+    const response = await axios({
+      url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyBdvJeSPTQG1NCk-WjkKcYssahXc41RtUE`,
+      method: "post",
+      data: {
+        contents: [{ parts: [{ text: Prompt + input }] }],
+      },
+    }
+  )
+
+   
+  const aiResponse = response.data.candidates[0].content.parts[0].text;
+  console.log(aiResponse)
+  return aiResponse
+}
