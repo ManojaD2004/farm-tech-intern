@@ -25,6 +25,7 @@ app.post('/insert-commodity', async function(req,res){
   const categoryId = await MandiDB.insertIntoCategory(categoryName);
   const commodityId = await MandiDB.insertIntoCommodity(cmdName, categoryId);
   await MandiDB.insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice);
+  res.json({mssg : "inserted"})
 })
 
 app.get('/mandi-detail',async function(req,res){
@@ -34,6 +35,15 @@ app.get('/mandi-detail',async function(req,res){
  res.json({name :userMandiNames,id : userMandiIds})
 })
 
+app.get('/categories-commodities', async (req, res) => {
+  
+    const { contactDetail } = req.body;
+    const mandiIds = await MandiDB.getMandiIds(contactDetail);
+    console.log(mandiIds)
+    const data = await MandiDB.getCategoriesAndCommoditiesByMandiIds(mandiIds);
+    res.json(data,);
+ 
+});
 
 
 app.get('/hello' , function(req,res){
