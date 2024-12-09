@@ -108,26 +108,25 @@ class MandiDatabase {
   
   
   async insertIntoCommodity(cmdName, categoryId) {
-    let commodityId
-    const insertCommodityQuery = `
-      INSERT INTO Commodity (name, category_id)
-      VALUES (LOWER($1), $2)
-      ON CONFLICT (name) DO NOTHING
-      RETURNING commodity_id;
-    `;
+    let commodityId;
+    const selectCommodityQuery = `SELECT commodity_id FROM Commodity WHERE name = LOWER($1) AND category_id = $2;`;
+    const selectCommodityResult = await this.pool.query(selectCommodityQuery, [cmdName, categoryId]);
 
-    const commodityResult = await this.pool.query(insertCommodityQuery, [cmdName, categoryId]);
-
-    if (commodityResult.rows.length > 0) {
-      commodityId =  commodityResult.rows[0].commodity_id;
-      return commodityId
+    if (selectCommodityResult.rows.length === 0) {
+        const insertCommodityQuery = `
+        INSERT INTO Commodity (name, category_id)
+        VALUES (LOWER($1), $2)
+        ON CONFLICT (name) DO NOTHING
+        RETURNING commodity_id;
+      `;
+        const commodityResult = await this.pool.query(insertCommodityQuery, [cmdName, categoryId]);
+        commodityId = commodityResult.rows[0].commodity_id;
     } else {
-      const selectCommodityQuery = 'SELECT commodity_id FROM Commodity WHERE name = LOWER($1);';
-      const selectCommodityResult = await this.pool.query(selectCommodityQuery, [cmdName]);
-      commodityId =  selectCommodityResult.rows[0].commodity_id;
-      return commodityId    
+        commodityId = selectCommodityResult.rows[0].commodity_id;
     }
-  }
+    return commodityId;
+}
+
   async insertIntoCommodityPrice(commodityId, mandiId, gradeType, gradePrice) {
     const insertCommodityPriceQuery = `
     INSERT INTO Commodity_Price (commodity_id, mandi_id, grade_type, grade_price)
@@ -136,6 +135,12 @@ class MandiDatabase {
   `;
   const commodityPriceResult = await this.pool.query(insertCommodityPriceQuery, [commodityId, mandiId, gradeType, gradePrice]);
   }
+  async getUserExist(contactDetail) {
+    const userGetQuery = `SELECT 1 FROM Contact WHERE contact_detail = $1;`;
+    const userGetResult = await this.pool.query(userGetQuery, [contactDetail]);
+    return userGetResult.rows.length > 0;
+}
+
 
   async insertMandiData(data) {
     const { uuId, name, stateName, districtName,categoryName, cmdName, gradeType, gradePrice , contact} = data.mandi;

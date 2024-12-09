@@ -26,6 +26,7 @@ app.post('/insert-commodity', async function(req,res){
 })
 
 app.get('/user', async function(req,res){
-
-  
+const {contactDetail} = req.body 
+const userExists = MandiDB.getUserExist(contactDetail)
+res.send({exists : `${userExists}`})
 })
