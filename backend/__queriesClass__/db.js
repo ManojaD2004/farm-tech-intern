@@ -162,7 +162,7 @@ async getCategoriesAndCommoditiesByMandiIds(mandiIds) {
       JOIN Commodity co ON co.Commodity_id = cp.Commodity_id
       JOIN Category cat ON cat.Category_id = co.Category_id
       JOIN Mandi m ON m.Mandi_id = cp.Mandi_id
-      WHERE cp.Mandi_id = ANY($1::int[]);
+      WHERE cp.Mandi_id = $1;
     `;
 
     const result = await this.pool.query(query, [mandiIds]);

@@ -260,9 +260,10 @@ async function main() {
 
   app.post("/categories-commodities", async (req, res) => {
     try {
+      console.log("Hit /categories-commodities");
       const { mandiId } = req.body;
       const data = await MandiDB.getCategoriesAndCommoditiesByMandiIds(mandiId);
-      res.status(200).json(data);
+      res.status(200).send(data);
     } catch (error) {
       res.status(400).send(error);
       console.log(error);
