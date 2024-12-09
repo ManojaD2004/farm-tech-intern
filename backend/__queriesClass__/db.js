@@ -52,11 +52,11 @@ class MandiDatabase {
     return locationId;
   }
 
-  async insertIntoMandi(uuId, locationId, name) {
+  async insertIntoMandi(locationId, name) {
     let mandiId;
     const insertMandiQuery = `
-      INSERT INTO Mandi (uu_id, location_id, name)
-      VALUES ($1, $2, $3)
+      INSERT INTO Mandi (location_id, name)
+      VALUES ($1, $2)
       ON CONFLICT (uu_id) DO NOTHING
       RETURNING mandi_id;
     `;
@@ -66,7 +66,7 @@ class MandiDatabase {
     if (mandiResult.rows.length > 0) {
       mandiId = mandiResult.rows[0].mandi_id;
     } else {
-      const selectMandiQuery = `SELECT mandi_id FROM Mandi WHERE uu_id = $1;`
+      const selectMandiQuery = `SELECT mandi_id FROM Mandi WHERE loacation_id = $1 and name = $2;`
       const selectMandiResult = await this.pool.query(selectMandiQuery, [uuId]);
       mandiId = selectMandiResult.rows[0].mandi_id;
     }

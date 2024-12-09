@@ -78,11 +78,11 @@ async insertIntoDistrictMaster(districtName, stateId) {
     return locationId;
   }
 
-  async insertIntoMandi(uuId, locationId, name) {
+  async insertIntoMandi(locationId, name) {
     let mandiId;
     const insertMandiQuery = `
-      INSERT INTO Mandi (uu_id, location_id, name)
-      VALUES ($1, $2, $3)
+      INSERT INTO Mandi (location_id, name)
+      VALUES ($1, $2)
       ON CONFLICT (uu_id) DO NOTHING
       RETURNING mandi_id;
     `;
@@ -187,7 +187,6 @@ async insertIntoDistrictMaster(districtName, stateId) {
 
   const mandiData = {
     mandi: {
-      uuId: '123e4567-e89b-12d3-a456-426614174000',
       name: 'John Doe',
       stateName: 'Karnataka',
       districtName: 'Bangalore',
