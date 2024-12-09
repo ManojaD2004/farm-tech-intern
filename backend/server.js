@@ -3,6 +3,7 @@ const cors = require("cors");
 const { configDotenv } = require("dotenv");
 const { state } = require("./district.js");
 const { WhatsAppWebhook } = require("./whatsappWebhook.js");
+const { MandiDatabase } = require("./__queriesClass__/db.js");
 // const { inserMandiData } = require("./db.js");
 
 async function main() {
@@ -12,7 +13,8 @@ async function main() {
   app.use(cors());
 
   // console.log(process.env.WEBHOOK_VERIFY_TOKEN);
-  const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN, PORT } = process.env;
+  const { WEBHOOK_VERIFY_TOKEN, GRAPH_API_TOKEN, PORT, SUPABASE_LINK } =
+    process.env;
   const waWebhook = new WhatsAppWebhook(GRAPH_API_TOKEN);
   let item = {};
   let mandiJSON;
@@ -20,6 +22,8 @@ async function main() {
   for (let key in state.karnataka) {
     District += key + " " + state.karnataka[key] + "\n";
   }
+  const MandiDB = new MandiDatabase(SUPABASE_LINK);
+  await MandiDB.connectDb();
 
   app.post("/webhook", async (req, res) => {
     try {
@@ -203,6 +207,41 @@ async function main() {
   app.get("/hello", (req, res) => {
     console.log("Hit /hello");
     res.send(`Hello Tiger!`);
+  });
+
+  app.post("/create-user", async function (req, res) {
+    const { name, stateName, districtName, contact } = req.body;
+    const stateId = await MandiDB.insertIntoStateMaster(stateName);
+    const locationId = await MandiDB.insertIntoLocation(districtName, stateId);
+    const mandiId = await MandiDB.insertIntoMandi(locationId, name);
+    const { contactType, contactDetail } = contact;
+    await MandiDB.insertIntoContact(mandiId, contactType, contactDetail);
+    res.send({ mandiId: `${mandiId}` });
+  });
+
+  app.post("/insert-commodity", async function (req, res) {
+    const { categoryName, cmdName, gradeType, gradePrice, mandiId } = req.body;
+    const categoryId = await MandiDB.insertIntoCategory(categoryName);
+    const commodityId = await MandiDB.insertIntoCommodity(cmdName, categoryId);
+    await MandiDB.insertIntoCommodityPrice(
+      commodityId,
+      mandiId,
+      gradeType,
+      gradePrice
+    );
+  });
+
+  app.post("/mandi-detail", async function (req, res) {
+    const { contactDetail } = req.body;
+    const userMandiIds = await MandiDB.getMandiIds(contactDetail);
+    const userMandiNames = await MandiDB.getMandiNames(userMandiIds);
+    res.json({ name: userMandiNames, id: userMandiIds });
+  });
+
+  app.post("/user", async function (req, res) {
+    const { contactDetail } = req.body;
+    const userExists = await MandiDB.getUserExist(contactDetail);
+    res.send({ exists: `${userExists}` });
   });
 
   app.listen(PORT, () => {
