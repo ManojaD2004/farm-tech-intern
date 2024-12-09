@@ -141,7 +141,7 @@ async getMandiIds(contactDetail){
 }
 
 async getMandiNames(mandiIds) {
-  const selectMandiNameQuery = `SELECT name FROM Mandi WHERE mandi_id = ANY($1);`;
+  const selectMandiNameQuery = `SELECT name FROM Mandi WHERE mandi_id = ($1);`;
   const selectMandiNameResult = await this.pool.query(selectMandiNameQuery, [mandiIds]);
   const mandiNames =  selectMandiNameResult.rows.map(row => row.name); 
   return mandiNames
