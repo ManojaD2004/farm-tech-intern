@@ -217,7 +217,8 @@ async function main() {
       const userExists = await MandiDB.getUserExist(contactDetail)
       if(userExists){
         const mandiId = await MandiDB.getMandiId(contactDetail)
-        res.send({ mandiId: `${mandiId}` });
+        res.status(200).send({ mandiId: `${mandiId}` });
+        return
       }
       const stateId = await MandiDB.insertIntoStateMaster(stateName);
       const locationId = await MandiDB.insertIntoLocation(
